@@ -9,59 +9,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- html2pdf.js CDN for PDF download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Firebase CDN scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-        // Global variables for Firebase (will be populated by the environment)
-        let app;
-        let db;
-        let auth;
+    <script>
+        // Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-        // Ensure these are globally accessible for the script below
-        window.firebaseApp = null;
-        window.firestoreDb = null;
-        window.firebaseAuth = null;
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        window.firebaseApp = firebase.app();
+        window.firestoreDb = db;
+        window.firebaseAuth = auth;
         window.currentAppUserId = null;
-        window.isFirebaseAuthReady = false; // Flag to indicate Firebase auth is ready
+        window.isFirebaseAuthReady = false;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Retrieve global variables provided by the Canvas environment
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase config is missing. Data persistence will not work.");
-            }
-
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                window.firebaseApp = app;
-                window.firestoreDb = db;
-                window.firebaseAuth = auth;
-
-                // Attempt initial sign-in
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                // Set initial user ID and auth ready flag
-                window.currentAppUserId = auth.currentUser?.uid || crypto.randomUUID();
-                window.isFirebaseAuthReady = true;
-                document.getElementById('userIdDisplay').textContent = `User ID: ${window.currentAppUserId}`;
-
-            } catch (error) {
-                console.error("Error initializing Firebase or signing in:", error);
-                document.getElementById('userIdDisplay').textContent = `User ID: Not available (Error)`;
-            }
+        auth.signInAnonymously().then((result) => {
+            window.currentAppUserId = result.user.uid;
+            window.isFirebaseAuthReady = true;
+            document.getElementById('userIdDisplay').textContent = `User ID: ${window.currentAppUserId}`;
+        }).catch((error) => {
+            console.error("Error signing in anonymously:", error);
+            document.getElementById('userIdDisplay').textContent = `User ID: Not available (Error)`;
         });
     </script>
     <style>
@@ -726,24 +707,43 @@ Methodologies: Agile, Scrum, TDD</textarea>
         </div>
     </div>
 
-    <script type="module">
-        // Import Firestore functions
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const fullNameInput = document.getElementById('fullName');
-            const emailInput = document.getElementById('email');
-            const phoneInput = document.getElementById('phone');
-            const linkedinInput = document.getElementById('linkedin');
-            const addressInput = document.getElementById('address');
-            const referencesSelect = document.getElementById('references');
-            const summaryInput = document.getElementById('summary');
-            const educationEntriesContainer = document.getElementById('educationEntries');
-            const addEducationButton = document.getElementById('addEducation');
-            const experienceEntriesContainer = document.getElementById('experienceEntries');
-            const addExperienceButton = document.getElementById('addExperience');
+    <script>
+        // Replace Firestore imports and usage with compat API
+        // Example for saving resume data:
+        async function saveResumeData() {
+            // ...existing code...
+            const db = window.firestoreDb;
+            const userId = window.currentAppUserId;
+            if (!db || !userId || !window.isFirebaseAuthReady) {
+                // ...existing code...
+                return;
+            }
+            const resumeData = getResumeData();
+            await db.collection('users').doc(userId).set({ resume: resumeData });
+            // ...existing code...
+        }
+        // ...existing code...
+        // Example for loading resume data:
+        async function loadResumeData() {
+            // ...existing code...
+            const db = window.firestoreDb;
+            const userId = window.currentAppUserId;
+            if (!db || !userId || !window.isFirebaseAuthReady) {
+                // ...existing code...
+                return;
+            }
+            const docSnap = await db.collection('users').doc(userId).get();
+            if (docSnap.exists) {
+                const data = docSnap.data().resume;
+                populateForm(data);
+                // ...existing code...
+            }
+            // ...existing code...
+        }
+        // ...existing code...
+    </script>
+</body>
+</html>
             const skillsInput = document.getElementById('skills');
             const projectEntriesContainer = document.getElementById('projectEntries');
             const addProjectButton = document.getElementById('addProject');
